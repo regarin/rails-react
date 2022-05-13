@@ -1,24 +1,45 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 export default () => {
   const [tasks, setTasks] = useState([]);
   const [inputValue, setInputValue] = useState('');
 
-  function addTask () {
+  async function addTask () {
     const newTask = {
       description: inputValue,
-      id: tasks.length + 1,
     }
-    const newTasks = tasks.concat([newTask]);
-    setTasks(newTasks);
+    const response = await fetch("/api/v1/tasks", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(newTask),
+    });
+    if (response.ok) {
+      loadTasks();
+    }
   }
 
-  function removeTask (id) {
-    const newTasks = tasks.filter((task) => (
-      task.id !== id
-    ));
-    setTasks(newTasks);
+  async function removeTask (id) {
+    const response = await fetch(`/api/v1/tasks/${id}`, {
+      method: 'DELETE',
+    });
+    if (response.ok) {
+      loadTasks();
+    }
   }
+
+  async function loadTasks () {
+    const response = await fetch("/api/v1/tasks")
+    if (response.ok) {
+      const jsonResponse = await response.json();
+      setTasks(jsonResponse);
+    }
+  }
+
+  useEffect(() => {
+    loadTasks();
+  }, []);
 
   return (
     <div className="main-container">
