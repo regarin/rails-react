@@ -1,10 +1,15 @@
-import React from "react";
+import React, { useState } from 'react';
 
-export default () => (
-  <div>
-    <h1>Hola mundo!</h1>
-    <p>
-      Vamos a hacer una app con React.
-    </p>
-  </div>
-);
+// https://reactjs.org/docs/hooks-intro.html
+export default function () {
+  const [count, setCount] = useState(0);
+
+  return (
+    <div>
+      <p>You clicked {count} times</p>
+      <button onClick={() => setCount(count + 1)}>
+        Click me
+      </button>
+    </div>
+  );
+}
