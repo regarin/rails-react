@@ -1,45 +1,42 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useQuery, useMutation } from 'react-query'
 
 export default () => {
-  const [tasks, setTasks] = useState([]);
   const [inputValue, setInputValue] = useState('');
+  const { isLoading: isLoadingTasks, data: tasks, refetch: loadTasks } = useQuery('tasks', () =>
+    fetch("/api/v1/tasks").then(res =>
+      res.json()
+    ), {
+      refetchInterval: 5 * 1000,
+    }
+  );
 
-  async function addTask () {
+  const { mutate: addTask } = useMutation(() => {
     const newTask = {
       description: inputValue,
     }
-    const response = await fetch("/api/v1/tasks", {
+    return fetch("/api/v1/tasks", {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(newTask),
-    });
-    if (response.ok) {
-      loadTasks();
-    }
-  }
+    }).then(loadTasks);
+  });
 
-  async function removeTask (id) {
-    const response = await fetch(`/api/v1/tasks/${id}`, {
+  const { mutate: removeTask } = useMutation((id) => {
+    return fetch(`/api/v1/tasks/${id}`, {
       method: 'DELETE',
-    });
-    if (response.ok) {
-      loadTasks();
-    }
-  }
+    }).then(loadTasks);
+  });
 
-  async function loadTasks () {
-    const response = await fetch("/api/v1/tasks")
-    if (response.ok) {
-      const jsonResponse = await response.json();
-      setTasks(jsonResponse);
-    }
+  if (isLoadingTasks) {
+    return (
+      <div className="p-5">
+        <p>Cargando...</p>
+      </div>
+    );
   }
-
-  useEffect(() => {
-    loadTasks();
-  }, []);
 
   return (
     <div className="p-5">
