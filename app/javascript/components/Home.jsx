@@ -56,7 +56,7 @@ export default () => {
               { task.description }
             </p>
           </div>
-          <button className="" type="button" onClick={() => removeTask(task.id) }>x</button>
+          <button className="" type="button" onClick={() => removeTask(task.id) } data-testid={`remove-${task.id}`}>x</button>
         </div>
       )) }
     </div>

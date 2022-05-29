@@ -18,6 +18,15 @@
   },
   "version": "0.1.0",
   "devDependencies": {
+    "@testing-library/react": "^13.3.0",
+    "jest": "^28.1.0",
+    "jest-environment-jsdom": "^28.1.0",
     "webpack-dev-server": "^3"
+  },
+  "jest": {
+    "testEnvironment": "jsdom"
+  },
+  "scripts": {
+    "test": "jest"
   }
 }
