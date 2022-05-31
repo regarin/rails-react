@@ -1,65 +1,62 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useQuery, useMutation } from 'react-query'
 
 export default () => {
-  const [tasks, setTasks] = useState([]);
   const [inputValue, setInputValue] = useState('');
+  const { isLoading: isLoadingTasks, data: tasks, refetch: loadTasks } = useQuery('tasks', () =>
+    fetch("/api/v1/tasks").then(res =>
+      res.json()
+    ), {
+      refetchInterval: 5 * 1000,
+    }
+  );
 
-  async function addTask () {
+  const { mutate: addTask } = useMutation(() => {
     const newTask = {
       description: inputValue,
     }
-    const response = await fetch("/api/v1/tasks", {
+    return fetch("/api/v1/tasks", {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(newTask),
-    });
-    if (response.ok) {
-      loadTasks();
-    }
-  }
+    }).then(loadTasks);
+  });
 
-  async function removeTask (id) {
-    const response = await fetch(`/api/v1/tasks/${id}`, {
+  const { mutate: removeTask } = useMutation((id) => {
+    return fetch(`/api/v1/tasks/${id}`, {
       method: 'DELETE',
-    });
-    if (response.ok) {
-      loadTasks();
-    }
-  }
+    }).then(loadTasks);
+  });
 
-  async function loadTasks () {
-    const response = await fetch("/api/v1/tasks")
-    if (response.ok) {
-      const jsonResponse = await response.json();
-      setTasks(jsonResponse);
-    }
+  if (isLoadingTasks) {
+    return (
+      <div className="p-5">
+        <p>Cargando...</p>
+      </div>
+    );
   }
-
-  useEffect(() => {
-    loadTasks();
-  }, []);
 
   return (
-    <div className="main-container">
-      <h1 className="title">Tareas</h1>
+    <div className="p-5">
+      <h1 className="text-4xl mb-6">Tareas</h1>
 
-      <div className="new-task">
-        <label className="label">Nueva tarea:</label><br></br>
-        <input className="task-input" type="text" onChange={(e) => setInputValue(e.target.value)} />
-        <button className="add-task" type="button" onClick={addTask}>Agregar</button>
+      <div className="mb-6">
+        <label className="">Nueva tarea:</label><br></br>
+        <input className="rounded-md border-gray-300 mr-2" type="text" onChange={(e) => setInputValue(e.target.value)} />
+        <button className="rounded-md bg-blue-500 hover:bg-blue-600 text-white px-4 py-2" type="button" onClick={addTask}>Agregar</button>
       </div>
 
       { tasks.map((task) => (
-        <div key={task.id} className="task-container">
-          <div className="task-subcontainer">
-            <input type="checkbox" className="checkbox"/>
-            <p className="description">
+        <div key={task.id} className="flex flex-row justify-between hover:bg-gray-100 rounded-md px-4 py-2 items-center max-w-md">
+          <div className="flex flex-row items-center">
+            <input type="checkbox" className="mr-3 rounded-sm"/>
+            <p className="text-gray-700">
               { task.description }
             </p>
           </div>
-          <button className="remove-button" type="button" onClick={() => removeTask(task.id) }>x</button>
+          <button className="" type="button" onClick={() => removeTask(task.id) } data-testid={`remove-${task.id}`}>x</button>
         </div>
       )) }
     </div>
